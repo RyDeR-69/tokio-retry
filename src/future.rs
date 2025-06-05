@@ -71,19 +71,20 @@ where
         }
     }
 
-    pub fn spawn_notify<T: IntoIterator<IntoIter = I, Item = Duration>>(
+    pub fn spawn_notify<T: IntoIterator<IntoIter = I, Item = Duration>, F>(
         strategy: T,
         action: A,
-        notify: fn(&A::Error, std::time::Duration),
-    ) -> Retry<I, A> {
-        Retry {
-            retry_if: RetryIf::spawn(
-                strategy,
-                action,
-                (|_| true) as fn(&A::Error) -> bool,
-                notify,
-            ),
-        }
+        notify: F,
+    ) -> RetryIf<I, A, fn(&A::Error) -> bool, F>
+    where
+        F: FnMut(&A::Error, std::time::Duration),
+    {
+        RetryIf::spawn(
+            strategy,
+            action,
+            (|_| true) as fn(&A::Error) -> bool,
+            notify,
+        )
     }
 }
 
